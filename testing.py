@@ -1,0 +1,150 @@
+import chess
+import chess.engine
+import pandas as pd
+import numpy as np
+import time
+
+from agent import Agent
+
+
+class Testing:
+    def __init__(self, agent):
+        self.agent = agent
+
+    # Method that plays n_games against stockfish for each skill level or elo provided
+    def play_vs_stockfish(self, n_games, skill_levels=None, elos=None):
+        # Create a stockfish engine
+        engine = chess.engine.SimpleEngine.popen_uci(
+            r"C:\Users\jsalv\Downloads\stockfish_15.1_win_x64_avx2\stockfish_15.1_win_x64_avx2\stockfish-windows-2022-x86-64-avx2.exe")
+
+        results = {
+            'agent_plays_white': [],
+            'param': [],
+            'result': []
+        }
+
+        to_iterate = skill_levels if skill_levels is not None else (elos if elos is not None else [None])
+
+        for x in to_iterate:
+            if skill_levels is not None:
+                engine.configure({'Skill Level': x})
+            elif x is not None:
+                engine.configure({"UCI_LimitStrength": "true", "UCI_Elo": x})
+
+            # Play n_games
+            for i in range(n_games):
+
+                # Create a board
+                board = chess.Board()
+
+                # Half of the games, the agent plays white
+                if i < n_games / 2:
+                    # Get the best move
+                    best_move = self.agent.play(board)
+                    board.push(best_move)
+
+                while True:
+
+                    # Get the best move from the engine
+                    engine_move = engine.play(board, chess.engine.Limit(time=1/1e10)).move
+
+                    # Make the move
+                    board.push(engine_move)
+
+                    # Check if the game is over
+                    if board.is_game_over():
+                        break
+
+                    # Get the best move
+                    best_move = self.agent.play(board)
+
+                    # Make the move
+                    board.push(best_move)
+
+                    # Check if the game is over
+                    if board.is_game_over():
+                        break
+
+                results['agent_plays_white'].append(i < n_games / 2)
+                results['param'].append(x)
+                results['result'].append(board.result())
+        engine.quit()
+
+        results = pd.DataFrame(results)
+        # Calculate the whether it was a win, loss, or draw
+        results['agent_win'] = results.apply(
+            lambda x: x['result'] == '1-0' if x['agent_plays_white'] else x['result'] == '0-1', axis=1)
+        results['agent_loss'] = results.apply(
+            lambda x: x['result'] == '0-1' if x['agent_plays_white'] else x['result'] == '1-0', axis=1)
+        results['agent_draw'] = results['result'] == '1/2-1/2'
+
+        # Calculate the win, loss, and draw percentages by depth
+        results = results.groupby('param').agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean'})
+        results.index.names = ['skill_level' if skill_levels is not None else ('elo') if elos is not None else 'index']
+        print(results)
+
+    def play_vs_other_agent(self, other_agent, n_games):
+        results = {
+            'agent_plays_white': [],
+            'result': [],
+            'agent_time_to_move': [],
+            'other_agent_time_to_move': [],
+            'moves': [],
+        }
+
+        # Play n_games
+        for i in range(n_games):
+
+            # Half of the games, the agent plays white
+            if i < n_games / 2:
+                game_result, time_a, time_o, moves = self.play_game(self.agent, other_agent)
+            else:
+                game_result, time_o, time_a, moves = self.play_game(other_agent, self.agent)
+
+
+            results['agent_plays_white'].append(i < n_games / 2)
+            results['result'].append(game_result)
+            results['agent_time_to_move'].append(time_a)
+            results['other_agent_time_to_move'].append(time_o)
+            results['moves'].append(moves)
+
+        results = pd.DataFrame(results)
+        results['agent_win'] = results.apply(
+            lambda x: x['result'] == '1-0' if x['agent_plays_white'] else x['result'] == '0-1', axis=1)
+        results['agent_loss'] = results.apply(
+            lambda x: x['result'] == '0-1' if x['agent_plays_white'] else x['result'] == '1-0', axis=1)
+        results['agent_draw'] = results['result'] == '1/2-1/2'
+        aux = results.agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean',
+                           'agent_time_to_move': 'mean', 'other_agent_time_to_move': 'mean', 'moves': 'mean'})
+
+        print(aux)
+
+    @staticmethod
+    def play_game(agent_1: Agent, agent_2: Agent, max_moves=1000):
+        avg_time_1, avg_time_2 = 0, 0
+        # Create a board
+        board = chess.Board()
+
+        m1, m2 = 0, 0
+        while m1 + m2 < max_moves:
+            a = time.time()
+            move_1 = agent_1.play(board)
+            board.push(move_1)
+
+            avg_time_1 = (avg_time_1 * m1 + (time.time() - a)) / (m1 + 1)
+            m1 += 1
+
+            if board.is_game_over():
+                break
+
+            a = time.time()
+            move_2 = agent_2.play(board)
+            avg_time_2 = (avg_time_2 * m2 + (time.time() - a)) / (m2 + 1)
+            m2 += 1
+            board.push(move_2)
+
+            if board.is_game_over():
+                break
+
+        board_result = board.result() if board.is_game_over() else '1/2-1/2'
+        return board_result, avg_time_1, avg_time_2, m1 + m2
