@@ -95,7 +95,7 @@ class Testing:
         print(agg)
 
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        results.to_csv(f'{self.output_dir}/vs_stockfish_{timestamp}.csv')
+        results.to_csv(f'{self.output_dir}/{timestamp}_vs_stockfish.csv')
 
     def play_vs_other_agent(self, other_agent, n_games):
         print(f'Playing {n_games} games against {other_agent.__class__.__name__}')
@@ -135,7 +135,7 @@ class Testing:
 
         print(agg)
         timestamp = time.strftime("%Y%m%d-%H%M%S")
-        results.to_csv(f'{self.output_dir}/vs_agent_{timestamp}.csv')
+        results.to_csv(f'{self.output_dir}/{timestamp}_vs_agent.csv')
 
     @staticmethod
     def play_game(agent_1: Agent, agent_2: Agent, max_moves=1000):

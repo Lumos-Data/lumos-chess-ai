@@ -14,3 +14,4 @@ class Config:
 
         self.agent = config["agent"]
         self.testing = config["testing"]
+        self.visual = config["visual"]
