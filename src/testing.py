@@ -4,19 +4,24 @@ import pandas as pd
 import numpy as np
 import time
 
+from config import Config
 from agent import Agent
 
 
 class Testing:
-    def __init__(self, agent):
+    def __init__(self, config: Config, agent: Agent):
+        self.config_agent = config.agent
+        self.config_testing = config.testing
         self.agent = agent
 
     # Method that plays n_games against stockfish for each skill level or elo provided
     def play_vs_stockfish(self, n_games, skill_levels=None, elos=None):
-        # Create a stockfish engine
-        engine = chess.engine.SimpleEngine.popen_uci(
-            r"C:\Users\jsalv\Downloads\stockfish_15.1_win_x64_avx2\stockfish_15.1_win_x64_avx2\stockfish-windows-2022-x86-64-avx2.exe")
 
+        assert skill_levels is None or elos is None, "Provide either skill_levels or elos, not both"
+
+        print(f'Playing {n_games * (len(skill_levels) if skill_levels is not None else 1 if elos is None else len(elos))} games against stockfish')
+        # Create a stockfish engine
+        engine = chess.engine.SimpleEngine.popen_uci(self.config_testing["stockfish_path"])
         results = {
             'agent_plays_white': [],
             'param': [],
@@ -84,6 +89,7 @@ class Testing:
         print(results)
 
     def play_vs_other_agent(self, other_agent, n_games):
+        print(f'Playing {n_games} games against {other_agent.__class__.__name__}')
         results = {
             'agent_plays_white': [],
             'result': [],
