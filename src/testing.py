@@ -26,7 +26,8 @@ class Testing:
         results = {
             'agent_plays_white': [],
             'param': [],
-            'result': []
+            'result': [],
+            'game': []
         }
 
         to_iterate = skill_levels if skill_levels is not None else (elos if elos is not None else [None])
@@ -77,6 +78,7 @@ class Testing:
                 results['agent_plays_white'].append(i < n_games / 2)
                 results['param'].append(x)
                 results['result'].append(board.result())
+                results['game'].append(chess.Board().variation_san(board.move_stack))
         engine.quit()
 
         results = pd.DataFrame(results)
@@ -102,7 +104,8 @@ class Testing:
             'result': [],
             'agent_time_to_move': [],
             'other_agent_time_to_move': [],
-            'moves': [],
+            'n_moves': [],
+            'game': []
         }
 
         # Play n_games
@@ -110,16 +113,16 @@ class Testing:
 
             # Half of the games, the agent plays white
             if i < n_games / 2:
-                game_result, time_a, time_o, moves = self.play_game(self.agent, other_agent)
+                game_result, time_a, time_o, n_moves, board = self.play_game(self.agent, other_agent)
             else:
-                game_result, time_o, time_a, moves = self.play_game(other_agent, self.agent)
-
+                game_result, time_o, time_a, n_moves, board = self.play_game(other_agent, self.agent)
 
             results['agent_plays_white'].append(i < n_games / 2)
             results['result'].append(game_result)
             results['agent_time_to_move'].append(time_a)
             results['other_agent_time_to_move'].append(time_o)
-            results['moves'].append(moves)
+            results['n_moves'].append(n_moves)
+            results['game'].append(chess.Board().variation_san(board.move_stack))
 
         results = pd.DataFrame(results)
         results['agent_win'] = results.apply(
@@ -127,10 +130,12 @@ class Testing:
         results['agent_loss'] = results.apply(
             lambda x: x['result'] == '0-1' if x['agent_plays_white'] else x['result'] == '1-0', axis=1)
         results['agent_draw'] = results['result'] == '1/2-1/2'
-        aux = results.agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean',
-                           'agent_time_to_move': 'mean', 'other_agent_time_to_move': 'mean', 'moves': 'mean'})
+        agg = results.agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean',
+                           'agent_time_to_move': 'mean', 'other_agent_time_to_move': 'mean', 'n_moves': 'mean'})
 
-        print(aux)
+        print(agg)
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        results.to_csv(f'{self.output_dir}/vs_agent_{timestamp}.csv')
 
     @staticmethod
     def play_game(agent_1: Agent, agent_2: Agent, max_moves=1000):
@@ -160,4 +165,4 @@ class Testing:
                 break
 
         board_result = board.result() if board.is_game_over() else '1/2-1/2'
-        return board_result, avg_time_1, avg_time_2, m1 + m2
+        return board_result, avg_time_1, avg_time_2, m1 + m2, board
