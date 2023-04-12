@@ -89,7 +89,7 @@ class Testing:
 
         # Calculate the win, loss, and draw percentages by depth
         agg = results.groupby('param').agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean'})
-        agg.index.names = ['skill_level' if skill_levels is not None else ('elo') if elos is not None else 'index']
+        agg.index.names = ['skill_level' if skill_levels is not None else ('elo' if elos is not None else 'index')]
         print(agg)
 
         timestamp = time.strftime("%Y%m%d-%H%M%S")
