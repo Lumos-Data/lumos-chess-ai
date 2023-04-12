@@ -3,7 +3,6 @@ import chess.engine
 import pandas as pd
 import numpy as np
 import time
-
 from config import Config
 from agent import Agent
 
@@ -13,6 +12,8 @@ class Testing:
         self.config_agent = config.agent
         self.config_testing = config.testing
         self.agent = agent
+
+        self.output_dir = f'{config.root}/{self.config_testing["output_dir"]}'
 
     # Method that plays n_games against stockfish for each skill level or elo provided
     def play_vs_stockfish(self, n_games, skill_levels=None, elos=None):
@@ -46,6 +47,7 @@ class Testing:
                 if i < n_games / 2:
                     # Get the best move
                     best_move = self.agent.play(board)
+                    assert board.is_legal(best_move)
                     board.push(best_move)
 
                 while True:
@@ -54,6 +56,7 @@ class Testing:
                     engine_move = engine.play(board, chess.engine.Limit(time=1/1e10)).move
 
                     # Make the move
+                    assert board.is_legal(engine_move)
                     board.push(engine_move)
 
                     # Check if the game is over
@@ -64,6 +67,7 @@ class Testing:
                     best_move = self.agent.play(board)
 
                     # Make the move
+                    assert board.is_legal(best_move)
                     board.push(best_move)
 
                     # Check if the game is over
@@ -84,9 +88,12 @@ class Testing:
         results['agent_draw'] = results['result'] == '1/2-1/2'
 
         # Calculate the win, loss, and draw percentages by depth
-        results = results.groupby('param').agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean'})
-        results.index.names = ['skill_level' if skill_levels is not None else ('elo') if elos is not None else 'index']
-        print(results)
+        agg = results.groupby('param').agg({'agent_win': 'mean', 'agent_loss': 'mean', 'agent_draw': 'mean'})
+        agg.index.names = ['skill_level' if skill_levels is not None else ('elo') if elos is not None else 'index']
+        print(agg)
+
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        results.to_csv(f'{self.output_dir}/vs_stockfish_{timestamp}.csv')
 
     def play_vs_other_agent(self, other_agent, n_games):
         print(f'Playing {n_games} games against {other_agent.__class__.__name__}')
