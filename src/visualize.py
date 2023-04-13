@@ -57,14 +57,14 @@ class Visualize:
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
+                    if event.key == pygame.K_LEFT and i > 0:
                         i -= 1
-                    if event.key == pygame.K_RIGHT:
+                    if event.key == pygame.K_RIGHT and i < len(boards[j]) - 1:
                         i += 1
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_DOWN and j > 0:
                         j -= 1
                         i = 0
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_UP and j < len(boards) - 1:
                         j += 1
                         i = 0
                 if event.type == pygame.QUIT:
