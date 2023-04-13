@@ -6,7 +6,6 @@ from visualize import Visualize
 from pyinstrument import Profiler
 
 
-
 if __name__ == "__main__":
     profiler = Profiler()
     profiler.start()
@@ -21,8 +20,8 @@ if __name__ == "__main__":
     agent = Agent(config)
 
     testing = Testing(config, agent)
-    testing.play_vs_stockfish(10, skill_levels=[2, 3, 4, 5])
-    # testing.play_vs_stockfish(100, elos=[1400, 1500, 2500])
+    # testing.play_vs_stockfish(10, skill_levels=[2, 3, 4, 5])
+    testing.play_vs_stockfish(30, elos=[1400, 1500, 2500])
 
     testing.play_vs_other_agent(agent, 10)
 

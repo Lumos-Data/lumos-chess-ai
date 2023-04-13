@@ -13,4 +13,3 @@ class Evaluation:
     @staticmethod
     def neural_network_evaluation(board: chess.Board) -> float:
         pass
-
