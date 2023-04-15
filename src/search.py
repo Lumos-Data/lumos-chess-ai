@@ -9,9 +9,5 @@ class Search:
         return random.choice(list(board.legal_moves))
 
     @staticmethod
-    def minimax(board: chess.Board, eval_fn) -> chess.Move:
-        pass
-
-    @staticmethod
     def alphabeta(board: chess.Board, eval_fn) -> chess.Move:
         pass
