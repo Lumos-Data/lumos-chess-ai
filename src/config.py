@@ -16,3 +16,9 @@ class Config:
         self.agent = config["agent"]
         self.testing = config["testing"]
         self.visual = config["visual"]
+
+    def set_eval_function(self, evaluation_function_name: str):
+        self.agent["evaluation_function"] = evaluation_function_name
+
+    def set_search_algorithm(self, search_algorithm_name: str):
+        self.agent["search_algorithm"] = search_algorithm_name
