@@ -15,13 +15,18 @@ if __name__ == "__main__":
         profiler.start()
 
     # Create an agent
+    config.set_eval_function("dummy_evaluation")
+    config.set_search_algorithm("alphabeta")
     agent = Agent(config)
 
     testing = Testing(config, agent)
     # testing.play_vs_stockfish(10, skill_levels=[2, 3, 4, 5])
-    testing.play_vs_stockfish(30, elos=[1400, 1500, 2500])
+    # testing.play_vs_stockfish(30, elos=[1400, 1500, 2500])
 
-    testing.play_vs_other_agent(agent, 10)
+    config.set_eval_function("no_evaluation")
+    config.set_search_algorithm("random")
+    random_agent = Agent(config)
+    testing.play_vs_other_agent(random_agent, 100)
 
     # testing.play_vs_stockfish(10, [100, 500, 1000])
 

@@ -31,7 +31,7 @@ class Agent:
 
     def play(self, board: chess.Board):
         # Get the best move
-        best_move = self.search(board, self.eval)
+        best_move = self.search(self.config_agent['search_depth'], board, self.eval)
 
         # Return the move
         return best_move
