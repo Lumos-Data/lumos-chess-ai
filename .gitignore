@@ -2,3 +2,5 @@ config.yaml
 /shelf/
 /workspace.xml
 *.csv
+*.svg
+*.png
