@@ -7,14 +7,12 @@ from pyinstrument import Profiler
 
 
 if __name__ == "__main__":
-    profiler = Profiler()
-    profiler.start()
 
-    # config = {
-    #     "evaluation_function": "no_evaluation",
-    #     "search_algorithm": "random",
-    # }
     config = Config()
+
+    if config.main["profiling"]:
+        profiler = Profiler()
+        profiler.start()
 
     # Create an agent
     agent = Agent(config)
@@ -30,7 +28,8 @@ if __name__ == "__main__":
     visualize = Visualize(config)
     visualize.plot()
 
-    # profiler.stop()
-    # print(profiler.output_text(unicode=True, color=True))
-    # profiler.open_in_browser()
+    if config.main["profiling"]:
+        profiler.stop()
+        print(profiler.output_text(unicode=True, color=True))
+        profiler.open_in_browser()
 

@@ -12,6 +12,7 @@ class Config:
         with open(self.config_path, "r") as f:
             config = yaml.safe_load(f)
 
+        self.main = config['main']
         self.agent = config["agent"]
         self.testing = config["testing"]
         self.visual = config["visual"]
