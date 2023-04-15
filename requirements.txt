@@ -1,0 +1,6 @@
+chess
+pyyaml
+pyinstrument
+pygame
+svglib
+pandas
