@@ -8,7 +8,7 @@ class Search:
     INF = float("inf")
 
     @staticmethod
-    def random_search(board: chess.Board, eval_fn) -> chess.Move:
+    def random_search(depth, board: chess.Board, eval_fn) -> chess.Move:
         return random.choice(list(board.legal_moves))
 
     @staticmethod

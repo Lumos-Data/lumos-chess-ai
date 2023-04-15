@@ -26,7 +26,7 @@ if __name__ == "__main__":
     config.set_eval_function("no_evaluation")
     config.set_search_algorithm("random")
     random_agent = Agent(config)
-    testing.play_vs_other_agent(random_agent, 100)
+    testing.play_vs_other_agent(random_agent, 1)
 
     # testing.play_vs_stockfish(10, [100, 500, 1000])
 
