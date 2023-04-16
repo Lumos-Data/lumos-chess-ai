@@ -19,7 +19,7 @@ class Search:
         # White is always maximizing, black is always minimizing
         sign = 1 if board.turn == chess.WHITE else -1
 
-        best_move = sign * -Search.INF
+        best_move_value = sign * -Search.INF
         best_move_found = moves[0]
 
         for move in moves:
@@ -27,8 +27,8 @@ class Search:
             value = sign * Search.minimax(depth-1, -Search.INF, Search.INF, board, -sign, eval_fn)
             board.pop()
 
-            if value > best_move:
-                best_move = value
+            if value > best_move_value:
+                best_move_value = value
                 best_move_found = move
 
         return best_move_found
@@ -45,22 +45,24 @@ class Search:
         if board.is_stalemate() or board.is_insufficient_material():
             return 0
 
-        best_move = sign * -Search.INF
+        best_move_value = -Search.INF
 
         # TODO: move ordering
         moves = list(board.legal_moves)
         for move in moves:
             board.push(move)
             value = sign * Search.minimax(depth - 1, -beta, -alpha, board, -sign, eval_fn)
-            best_move = max(best_move, value)
+            best_move_value = max(best_move_value, value)
             board.pop()
+
             if sign > 0:
-                alpha = max(alpha, best_move)
+                alpha = max(alpha, best_move_value)
             else:
-                beta = min(beta, best_move)
+                beta = min(beta, best_move_value)
 
             if alpha >= beta:
-                return best_move
-        return best_move
+                return best_move_value
+
+        return best_move_value
 
 
