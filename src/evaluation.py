@@ -1,5 +1,7 @@
 import chess
 
+from utils import CHECK_MATE_VALUE, INF
+
 piece_value = {
     chess.PAWN: 100,
     chess.ROOK: 500,
@@ -113,10 +115,7 @@ class Evaluation:
 
         # Checkmate evaluation
         if board.is_checkmate():
-            if board.turn == chess.WHITE:
-                return -float('inf')
-            else:
-                return float('inf')
+            return -CHECK_MATE_VALUE if board.turn == chess.WHITE else CHECK_MATE_VALUE
 
         return total
 
