@@ -1,36 +1,33 @@
 import chess
 import random
 
+from typing import Callable, List, Tuple
+
 from utils import CHECK_MATE_VALUE, INF
 
 
 class Search:
 
     @staticmethod
-    def random_search(depth, board: chess.Board, eval_fn) -> chess.Move:
-        return random.choice(list(board.legal_moves))
+    def random_search(depth, board: chess.Board, eval_fn) -> List[Tuple[chess.Move, float]]:
+        return [(move, float('nan')) for move in board.legal_moves]
 
     @staticmethod
-    def alphabeta(depth: int, board: chess.Board, eval_fn) -> chess.Move:
+    def alphabeta(depth: int, board: chess.Board, eval_fn) -> List[Tuple[chess.Move, float]]:
         # TODO: move ordering
         moves = list(board.legal_moves)
 
         # White is always maximizing, black is always minimizing
         sign = 1 if board.turn == chess.WHITE else -1
 
-        best_move_value = sign * -INF
-        best_move_found = moves[0]
-
+        move_values = []
         for move in moves:
             board.push(move)
-            value = sign * Search.minimax(depth-1, -INF, INF, board, -sign, eval_fn)
+            value = sign * Search.minimax(depth - 1, -INF, INF, board, -sign, eval_fn)
             board.pop()
+            move_values.append((move, value))
 
-            if value > best_move_value:
-                best_move_value = value
-                best_move_found = move
-
-        return best_move_found
+        return move_values
 
     @staticmethod
     def minimax(depth: int, alpha: float, beta: float, board: chess.Board, sign, eval_fn) -> float:

@@ -101,7 +101,7 @@ class Evaluation:
         return 0
 
     @staticmethod
-    def dummy_evaluation(board: chess.Board) -> float:
+    def baseline_evaluation(board: chess.Board) -> float:
         # Piece and position evaluation
         end_game = check_end_game(board)
         total = 0
@@ -128,8 +128,8 @@ def check_end_game(board: chess.Board) -> bool:
     - Every side which has a queen has additionally no other pieces or one minorpiece maximum.
     """
     queens = len(board.pieces(chess.QUEEN, chess.WHITE)) + len(board.pieces(chess.QUEEN, chess.BLACK))
-    minors = len(board.pieces(chess.BISHOP, chess.WHITE)) + len(board.pieces(chess.BISHOP, chess.BLACK)) + \
-                len(board.pieces(chess.KNIGHT, chess.WHITE)) + len(board.pieces(chess.KNIGHT, chess.BLACK))
+    minors = len(board.pieces(chess.BISHOP, chess.WHITE)) + len(board.pieces(chess.BISHOP, chess.BLACK)) + len(
+        board.pieces(chess.KNIGHT, chess.WHITE)) + len(board.pieces(chess.KNIGHT, chess.BLACK))
 
     return queens == 0 or (queens == 2 and minors <= 1)
 

@@ -15,7 +15,7 @@ if __name__ == "__main__":
         profiler.start()
 
     # Create an agent
-    config.set_eval_function("dummy_evaluation")
+    config.set_eval_function("baseline_evaluation")
     config.set_search_algorithm("alphabeta")
     agent = Agent(config)
 

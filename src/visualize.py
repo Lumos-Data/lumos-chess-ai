@@ -84,9 +84,7 @@ class Visualize:
 
             # For every move of the opponent, we display the top 5 moves of our agent
             if (who_is_white == 'our agent' and i % 2 == 1) or (who_is_white == 'test opponent' and i % 2 == 0):
-                # top_moves = self.df.loc[j, 'top_moves']
-                top_moves = "m1 - 1010,m2 - 1000,m3 - 800,m4 - 700,m5 - 550"
-                top_moves = top_moves.split(',')
+                top_moves = self.df.loc[j, 'top_moves'].split('//')[i // 2 + 1].split(',')
                 screen.blit(font_small.render('Top 5 moves:', True, self.white, self.black), (self.X - 100, 10))
                 # Could that be a loop?
                 screen.blit(font_small.render(top_moves[0], True, self.white, self.black), (self.X - 100, 25))

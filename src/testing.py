@@ -54,7 +54,7 @@ class Testing:
                 while True:
 
                     # Get the best move from the engine
-                    engine_move = engine.play(board, chess.engine.Limit(time=1/1e10)).move
+                    engine_move = engine.play(board, chess.engine.Limit(time=1 / 1e10)).move
 
                     # Make the move
                     assert board.is_legal(engine_move)
@@ -99,30 +99,34 @@ class Testing:
 
     def play_vs_other_agent(self, other_agent, n_games):
         print(f'Playing {n_games} games against {other_agent.__class__.__name__}')
-        results = {
-            'agent_plays_white': [],
-            'result': [],
-            'agent_time_to_move': [],
-            'other_agent_time_to_move': [],
-            'n_moves': [],
-            'game': []
-        }
+        col_names = ['agent_plays_white', 'result', 'agent_time_to_move', 'other_agent_time_to_move', 'n_moves', 'game',
+                     'top_moves']
+        results = {col_name: [] for col_name in col_names}
 
         # Play n_games
         for i in range(n_games):
 
             # Half of the games, the agent plays white
             if i < n_games / 2:
-                game_result, time_a, time_o, n_moves, board = self.play_game(self.agent, other_agent)
+                game_info = self.play_game(self.agent, other_agent)
+                time_a = game_info['avg_time_1']
+                time_o = game_info['avg_time_2']
+                top_moves = game_info['top_moves_1']
+                # game_result, time_a, time_o, n_moves, board = self.play_game(self.agent, other_agent)
             else:
-                game_result, time_o, time_a, n_moves, board = self.play_game(other_agent, self.agent)
+                game_info = self.play_game(other_agent, self.agent)
+                time_a = game_info['avg_time_2']
+                time_o = game_info['avg_time_1']
+                top_moves = game_info['top_moves_2']
+                # game_result, time_o, time_a, n_moves, board = self.play_game(other_agent, self.agent)
 
             results['agent_plays_white'].append(i < n_games / 2)
-            results['result'].append(game_result)
+            results['result'].append(game_info['board_result'])
             results['agent_time_to_move'].append(time_a)
             results['other_agent_time_to_move'].append(time_o)
-            results['n_moves'].append(n_moves)
-            results['game'].append(chess.Board().variation_san(board.move_stack))
+            results['n_moves'].append(game_info['n_moves'])
+            results['game'].append(chess.Board().variation_san(game_info['board'].move_stack))
+            results['top_moves'].append('//'.join(top_moves))
 
         results = pd.DataFrame(results)
         results['agent_win'] = results.apply(
@@ -138,31 +142,43 @@ class Testing:
         results.to_csv(f'{self.output_dir}/{timestamp}_vs_agent.csv')
 
     @staticmethod
-    def play_game(agent_1: Agent, agent_2: Agent, max_moves=1000):
+    def play_game(agent_1: Agent, agent_2: Agent, max_moves=1000) -> dict:
         avg_time_1, avg_time_2 = 0, 0
         # Create a board
         board = chess.Board()
 
         m1, m2 = 0, 0
+        top_moves_1 = []
+        top_moves_2 = []
         while m1 + m2 < max_moves:
-            a = time.time()
-            move_1 = agent_1.play(board)
-            board.push(move_1)
-
-            avg_time_1 = (avg_time_1 * m1 + (time.time() - a)) / (m1 + 1)
-            m1 += 1
+            avg_time_1, m1 = Testing.play_move(agent_1, avg_time_1, board, m1, top_moves_1)
 
             if board.is_game_over():
                 break
 
-            a = time.time()
-            move_2 = agent_2.play(board)
-            avg_time_2 = (avg_time_2 * m2 + (time.time() - a)) / (m2 + 1)
-            m2 += 1
-            board.push(move_2)
+            avg_time_2, m2 = Testing.play_move(agent_2, avg_time_2, board, m2, top_moves_2)
 
             if board.is_game_over():
                 break
 
-        board_result = board.result() if board.is_game_over() else '1/2-1/2'
-        return board_result, avg_time_1, avg_time_2, m1 + m2, board
+        results = {
+            'board_result': board.result() if board.is_game_over() else '1/2-1/2',
+            'avg_time_1': round(avg_time_1, 4),
+            'avg_time_2': round(avg_time_2, 4),
+            'n_moves': m1 + m2,
+            'board': board,
+            'top_moves_1': top_moves_1,
+            'top_moves_2': top_moves_2
+        }
+
+        return results
+
+    @staticmethod
+    def play_move(agent, avg_time, board, m, top_moves):
+        a = time.time()
+        move, move_scores = agent.play_and_evaluate(board)
+
+        top_moves.append(move_scores)
+        avg_time = (avg_time * m + (time.time() - a)) / (m + 1)
+        board.push(move)
+        return avg_time, m + 1
