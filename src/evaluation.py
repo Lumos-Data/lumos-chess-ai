@@ -105,11 +105,7 @@ class Evaluation:
         # Piece and position evaluation
         end_game = check_end_game(board)
         total = 0
-        for square in chess.SQUARES:
-            piece = board.piece_at(square)
-            if not piece:
-                continue
-
+        for square, piece in board.piece_map().items():
             value = piece_value[piece.piece_type] + evaluate_piece(piece, square, end_game)
             total += value if piece.color == chess.WHITE else -value
 
@@ -135,10 +131,7 @@ def check_end_game(board: chess.Board) -> bool:
     minors = len(board.pieces(chess.BISHOP, chess.WHITE)) + len(board.pieces(chess.BISHOP, chess.BLACK)) + \
                 len(board.pieces(chess.KNIGHT, chess.WHITE)) + len(board.pieces(chess.KNIGHT, chess.BLACK))
 
-    if queens == 0 or (queens == 2 and minors <= 1):
-        return True
-
-    return False
+    return queens == 0 or (queens == 2 and minors <= 1)
 
 
 def evaluate_piece(piece: chess.Piece, square: chess.Square, end_game: bool) -> int:
