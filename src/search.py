@@ -4,6 +4,7 @@ import random
 from typing import Callable, List, Tuple
 
 from utils import CHECK_MATE_VALUE, INF
+from src.evaluation import check_end_game, move_value
 
 
 class Search:
@@ -13,9 +14,25 @@ class Search:
         return [(move, float('nan')) for move in board.legal_moves]
 
     @staticmethod
+    def get_ordered_moves(board: chess.Board) -> List[chess.Move]:
+        """
+        Get legal moves.
+        Attempt to sort moves by best to worst.
+        Use piece values (and positional gains/losses) to weight captures.
+        """
+        end_game = check_end_game(board)
+
+        def orderer(move):
+            return move_value(board, move, end_game)
+
+        in_order = sorted(board.legal_moves, key=orderer, reverse=(board.turn == chess.WHITE))
+
+        return list(in_order)
+
+    @staticmethod
     def alphabeta(depth: int, board: chess.Board, eval_fn) -> List[Tuple[chess.Move, float]]:
-        # TODO: move ordering
-        moves = list(board.legal_moves)
+
+        moves = Search.get_ordered_moves(board)
 
         # White is always maximizing, black is always minimizing
         sign = 1 if board.turn == chess.WHITE else -1
@@ -43,8 +60,7 @@ class Search:
 
         best_move_value = -INF
 
-        # TODO: move ordering
-        moves = list(board.legal_moves)
+        moves = Search.get_ordered_moves(board)
         for move in moves:
             board.push(move)
             value = sign * Search.minimax(depth - 1, -beta, -alpha, board, -sign, eval_fn)
